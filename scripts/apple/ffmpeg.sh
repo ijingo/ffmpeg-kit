@@ -315,7 +315,7 @@ for library in {0..61}; do
       FFMPEG_CFLAGS+=" $(pkg-config --cflags hogweed 2>>"${BASEDIR}"/build.log)"
       FFMPEG_LDFLAGS+=" $(pkg-config --libs --static hogweed 2>>"${BASEDIR}"/build.log)"
       ;;
-    ios-* | tvos-* | macos-*)
+    ios-* | tvos-* | macos-* | xros-*)
 
       # BUILT-IN LIBRARIES SHARE INCLUDE AND LIB DIRECTORIES
       # INCLUDING ONLY ONE OF THEM IS ENOUGH
@@ -328,7 +328,7 @@ for library in {0..61}; do
 
         if [[ ${FFMPEG_KIT_BUILD_TYPE} != "macos" ]]; then
 
-          # NOT AVAILABLE ON IOS, TVOS
+          # NOT AVAILABLE ON IOS, TVOS, XROS
           CONFIGURE_POSTFIX+=" --disable-outdev=audiotoolbox"
         fi
         ;;
@@ -356,6 +356,9 @@ for library in {0..61}; do
         ;;
       *-videotoolbox)
         CONFIGURE_POSTFIX+=" --enable-videotoolbox"
+        if [[ $ENABLED_LIBRARY == xros-* ]]; then
+          WORKAROUND_FOR_VISIONOS=1
+        fi
         ;;
       *-zlib)
         CONFIGURE_POSTFIX+=" --enable-zlib"
@@ -488,6 +491,13 @@ fi
 
 # 3. Use thread local log levels
 ${SED_INLINE} 's/static int av_log_level/__thread int av_log_level/g' "${BASEDIR}"/src/${LIB_NAME}/libavutil/log.c 1>>"${BASEDIR}"/build.log 2>&1 || return 1
+
+# 4. Workaround for videotoolbox on visionOS
+if [[ -n ${WORKAROUND_FOR_VISIONOS} ]]; then
+  ${SED_INLINE} 's/kCVPixelBufferOpenGLESCompatibilityKey/kCVPixelBufferMetalCompatibilityKey/g' "${BASEDIR}"/src/${LIB_NAME}/libavcodec/videotoolbox.c || return 1
+else
+  ${SED_INLINE} 's/kCVPixelBufferMetalCompatibilityKey/kCVPixelBufferOpenGLESCompatibilityKey/g' "${BASEDIR}"/src/${LIB_NAME}/libavcodec/videotoolbox.c || return 1
+fi
 
 ###################################################################
 

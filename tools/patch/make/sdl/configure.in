@@ -3671,7 +3671,7 @@ AC_HELP_STRING([--enable-render-d3d], [enable the Direct3D render driver [[defau
         #  other spins, like x86-64, use a more standard "libstdc++.so.*"
         AC_CHECK_FILE("/boot/system/lib/libstdc++.r4.so", EXTRA_LDFLAGS="$EXTRA_LDFLAGS -lstdc++.r4", EXTRA_LDFLAGS="$EXTRA_LDFLAGS -lstdc++")
         ;;
-    arm*-apple-darwin*|*-ios-*|*-tvos-*)
+    arm*-apple-darwin*|*-ios-*|*-tvos-*|*-xros-*)
         ARCH=ios
 
         CheckVisibilityHidden
@@ -3756,6 +3756,10 @@ AC_HELP_STRING([--enable-render-d3d], [enable the Direct3D render driver [[defau
             ;;
             *-darwin-*)
                 EXTRA_LDFLAGS="$EXTRA_LDFLAGS -Wl,-framework,CoreMotion"
+            ;;
+            *-xros-*)
+                EXTRA_LDFLAGS="$EXTRA_LDFLAGS -Wl,-framework,CoreMotion"
+                EXTRA_LDFLAGS="$EXTRA_LDFLAGS -Wl,-framework,UIKit"
             ;;
         esac
 

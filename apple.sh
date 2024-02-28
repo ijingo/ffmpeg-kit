@@ -7,17 +7,19 @@ enable_default_architecture_variants() {
   ENABLED_ARCHITECTURE_VARIANTS[ARCH_VAR_APPLETVOS]=1
   ENABLED_ARCHITECTURE_VARIANTS[ARCH_VAR_APPLETVSIMULATOR]=1
   ENABLED_ARCHITECTURE_VARIANTS[ARCH_VAR_MACOS]=1
+  ENABLED_ARCHITECTURE_VARIANTS[ARCH_VAR_XROS]=1
+  ENABLED_ARCHITECTURE_VARIANTS[ARCH_VAR_XRSIMULATOR]=1
 }
 
 display_help() {
   COMMAND=$(echo "$0" | sed -e 's/\.\///g')
 
   echo -e "\n'$COMMAND' combines FFmpegKit frameworks created for Apple architecture variants in an xcframework. \
-It uses frameworks created under the prebuilt folder for iOS, tvOS and macOS architecture variants (iphoneos, \
-iphonesimulator, mac-catalyst, appletvos, appletvsimulator, macosx) as input and builds an umbrella xcframework under \
+It uses frameworks created under the prebuilt folder for iOS, tvOS, macOS and xrOS architecture variants (iphoneos, \
+iphonesimulator, mac-catalyst, appletvos, appletvsimulator, macosx, xros, xrsimulator) as input and builds an umbrella xcframework under \
 the prebuilt folder.\n\nPlease note that this script is only responsible of packaging existing frameworks, created by \
-'ios.sh', 'tvos.sh' and 'macos.sh'. Running it will not compile any of these libraries again. Top level build scripts \
-('ios.sh', 'tvos.sh', 'macos.sh') must be used to build ffmpeg with support for a specific external library first. \
+'ios.sh', 'tvos.sh', 'macos.sh' and 'xros'. Running it will not compile any of these libraries again. Top level build scripts \
+('ios.sh', 'tvos.sh', 'macos.sh', 'xros.sh') must be used to build ffmpeg with support for a specific external library first. \
 After that this script should be used to create an umbrella xcframework.\n"
   echo -e "Usage: ./$COMMAND [OPTION]...\n"
   echo -e "Specify environment variables as VARIABLE=VALUE to override default build options.\n"
@@ -35,6 +37,8 @@ After that this script should be used to create an umbrella xcframework.\n"
   echo -e "  --disable-appletvos\t\tdo not include appletvos architecture variant [yes]"
   echo -e "  --disable-appletvsimulator\tdo not include appletvsimulator architecture variant [yes]"
   echo -e "  --disable-macosx\t\tdo not include macosx architecture variant [yes]\n"
+  echo -e "  --disable-xros\t\tdo not include xros architecture variant [yes]\n"
+  echo -e "  --disable-xrsimulator\t\tdo not include xrsimulator architecture variant [yes]\n"
 }
 
 initialize_prebuilt_umbrella_xcframework_folders() {
@@ -101,6 +105,12 @@ disable_arch_variant() {
   macosx)
     ENABLED_ARCHITECTURE_VARIANTS[ARCH_VAR_MACOS]=0
     ;;
+  xros)
+    ENABLED_ARCHITECTURE_VARIANTS[ARCH_VAR_XROS]=0
+    ;;
+  xrsimulator)
+    ENABLED_ARCHITECTURE_VARIANTS[ARCH_VAR_XRSIMULATOR]=0
+    ;;
   *)
     print_unknown_arch_variant "$1"
     ;;
@@ -137,7 +147,8 @@ fi
 DETECTED_IOS_SDK_VERSION="$(xcrun --sdk iphoneos --show-sdk-version 2>>"${BASEDIR}"/build.log)"
 DETECTED_TVOS_SDK_VERSION="$(xcrun --sdk appletvos --show-sdk-version 2>>"${BASEDIR}"/build.log)"
 DETECTED_MACOS_SDK_VERSION="$(xcrun --sdk macosx --show-sdk-version 2>>"${BASEDIR}"/build.log)"
-echo -e "INFO: Using iOS SDK: ${DETECTED_IOS_SDK_VERSION}, tvOS SDK: ${DETECTED_TVOS_SDK_VERSION}, macOS SDK: ${DETECTED_MACOS_SDK_VERSION} by Xcode provided at $(xcode-select -p)\n" 1>>"${BASEDIR}"/build.log 2>&1
+DETECTED_XROS_SDK_VERSION="$(xcrun --sdk xros --show-sdk-version 2>>"${BASEDIR}"/build.log)"
+echo -e "INFO: Using iOS SDK: ${DETECTED_IOS_SDK_VERSION}, tvOS SDK: ${DETECTED_TVOS_SDK_VERSION}, macOS SDK: ${DETECTED_MACOS_SDK_VERSION}, xrOS SDK: ${DETECTED_XROS_SDK_VERSION} by Xcode provided at $(xcode-select -p)\n" 1>>"${BASEDIR}"/build.log 2>&1
 echo -e "INFO: Build options: $*\n" 1>>"${BASEDIR}"/build.log 2>&1
 
 # SET DEFAULT BUILD OPTIONS
@@ -206,7 +217,7 @@ echo ""
 TARGET_ARCHITECTURE_VARIANT_INDEX_ARRAY=()
 
 # SAVE ARCHITECTURE VARIANTS
-for run_arch_variant in {1..8}; do
+for run_arch_variant in {1..11}; do
   if [[ ${ENABLED_ARCHITECTURE_VARIANTS[$run_arch_variant]} -eq 1 ]]; then
     case "$run_arch_variant" in
     1 | 5) ;;

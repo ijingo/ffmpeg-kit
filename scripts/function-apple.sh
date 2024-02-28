@@ -161,6 +161,9 @@ build_apple_architecture_variant_strings() {
   export APPLETVOS_ARCHITECTURES="$(get_apple_architectures_for_variant "${ARCH_VAR_APPLETVOS}")"
   export APPLETV_SIMULATOR_ARCHITECTURES="$(get_apple_architectures_for_variant "${ARCH_VAR_APPLETVSIMULATOR}")"
   export MACOSX_ARCHITECTURES="$(get_apple_architectures_for_variant "${ARCH_VAR_MACOS}")"
+  export ALL_XR_ARCHITECTURES="$(get_apple_architectures_for_variant "${ARCH_VAR_XR}")"
+  export XROS_ARCHITECTURES="$(get_apple_architectures_for_variant "${ARCH_VAR_XROS}")"
+  export XR_SIMULATOR_ARCHITECTURES="$(get_apple_architectures_for_variant "${ARCH_VAR_XRSIMULATOR}")"
 }
 
 #
@@ -656,6 +659,15 @@ get_framework_directory() {
   "${ARCH_VAR_MACOS}")
     echo "bundle-apple-framework-macos${LTS_POSTFIX}"
     ;;
+  "${ARCH_VAR_XR}")
+    echo "bundle-apple-framework-xr${LTS_POSTFIX}"
+    ;;
+  "${ARCH_VAR_XROS}")
+    echo "bundle-apple-framework-xros${LTS_POSTFIX}"
+    ;;
+  "${ARCH_VAR_XRSIMULATOR}")
+    echo "bundle-apple-framework-xrsimulator${LTS_POSTFIX}"
+    ;;
   esac
 }
 
@@ -712,6 +724,15 @@ get_universal_library_directory() {
   "${ARCH_VAR_MACOS}")
     echo "bundle-apple-universal-macos${LTS_POSTFIX}"
     ;;
+  "${ARCH_VAR_XR}")
+    echo "bundle-apple-universal-xr${LTS_POSTFIX}"
+    ;;
+  "${ARCH_VAR_XROS}")
+    echo "bundle-apple-universal-xros${LTS_POSTFIX}"
+    ;;
+  "${ARCH_VAR_XRSIMULATOR}")
+    echo "bundle-apple-universal-xrsimulator${LTS_POSTFIX}"
+    ;;
   esac
 }
 
@@ -749,6 +770,15 @@ get_apple_architecture_variant() {
     ;;
   "${ARCH_VAR_MACOS}")
     echo "macos${LTS_POSTFIX}"
+    ;;
+  "${ARCH_VAR_XR}")
+    echo "xr${LTS_POSTFIX}"
+    ;;
+  "${ARCH_VAR_XROS}")
+    echo "xros${LTS_POSTFIX}"
+    ;;
+  "${ARCH_VAR_XRSIMULATOR}")
+    echo "xrsimulator${LTS_POSTFIX}"
     ;;
   esac
 }
@@ -799,6 +829,21 @@ get_apple_architectures_for_variant() {
     ;;
   "${ARCH_VAR_MACOS}")
     for index in ${ARCH_ARM64} ${ARCH_X86_64}; do
+      ARCHITECTURES+=" $(get_full_arch_name "${index}") "
+    done
+    ;;
+  "${ARCH_VAR_XR}")
+    for index in ${ARCH_ARM64} ${ARCH_ARM64_SIMULATOR}; do
+      ARCHITECTURES+=" $(get_full_arch_name "${index}") "
+    done
+    ;;
+  "${ARCH_VAR_XROS}")
+    for index in ${ARCH_ARM64}; do
+      ARCHITECTURES+=" $(get_full_arch_name "${index}") "
+    done
+    ;;
+  "${ARCH_VAR_XRSIMULATOR}")
+    for index in ${ARCH_ARM64_SIMULATOR}; do
       ARCHITECTURES+=" $(get_full_arch_name "${index}") "
     done
     ;;
@@ -931,6 +976,11 @@ build_info_plist() {
     local MINIMUM_OS_VERSION="${MACOS_MIN_VERSION}"
     local SUPPORTED_PLATFORMS="MacOSX"
     ;;
+  xros)
+    local MINIMUM_VERSION_KEY="MinimumOSVersion"
+    local MINIMUM_OS_VERSION="${XROS_MIN_VERSION}"
+    local SUPPORTED_PLATFORMS="XROS"
+    ;;
   esac
 
   cat >${FILE_PATH} <<EOF
@@ -980,6 +1030,9 @@ get_default_sdk_name() {
   macos)
     echo "macosx"
     ;;
+  xros)
+    echo "xros"
+    ;;
   esac
 }
 
@@ -998,6 +1051,9 @@ get_sdk_name() {
       ;;
     macos)
       echo "macosx"
+      ;;
+    xros)
+      echo "xros"
       ;;
     esac
     ;;
@@ -1025,6 +1081,9 @@ get_sdk_name() {
     tvos)
       echo "appletvsimulator"
       ;;
+    xros)
+      echo "xrsimulator"
+      ;;
     esac
     ;;
   *-mac-catalyst)
@@ -1048,6 +1107,9 @@ get_min_version_cflags() {
       ;;
     macos)
       echo "-mmacosx-version-min=$(get_min_sdk_version)"
+      ;;
+    xros)
+      echo ""
       ;;
     esac
     ;;
@@ -1075,6 +1137,9 @@ get_min_version_cflags() {
     tvos)
       echo "-mappletvsimulator-version-min=$(get_min_sdk_version)"
       ;;
+    xros)
+      echo ""
+      ;;
     esac
     ;;
   *-mac-catalyst)
@@ -1098,6 +1163,9 @@ get_min_sdk_version() {
       ;;
     macos)
       echo "${MACOS_MIN_VERSION}"
+      ;;
+    xros)
+      echo "${XROS_MIN_VERSION}"
       ;;
     esac
     ;;
